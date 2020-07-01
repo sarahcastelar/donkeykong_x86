@@ -1,4 +1,26 @@
 ;#exec "../Orga/donkeykong.asm"
+push 3
+push 0
+push 0
+push 0
+push 0
+push 0
+push 0
+push 0
+push 0
+push ebp
+mov ebp, esp
+
+mov dword[ebp+4], 0
+mov dword[ebp+8], 0
+mov dword[ebp+12], 0
+mov dword[ebp+16], 78
+mov dword[ebp+20], 0
+mov dword[ebp+24], 16
+mov dword[ebp+28], 0
+mov dword[ebp+32], 40
+mov ecx, 0
+
 
 ;print nubes
 mov ecx, 0
@@ -31,6 +53,24 @@ mov edx, 56
 call getOffset
 mov dword [esi], 0x0fb60fb5
 
+;print vidas
+mov ecx, 29
+mov edx, 2
+call getOffset
+mov dword [esi], 0x0a490a4c
+mov edx, 4
+call getOffset
+mov dword [esi], 0x0a450a56
+mov edx, 6
+call getOffset
+mov dword [esi], 0x0a3a0a53
+mov edx, 8
+call getOffset
+mov dword [esi], 0x04b70020
+mov edx, 10
+call getOffset
+mov dword [esi], 0x04b704b7
+
 ;print donkey kong
 mov ecx, 1
 mov edx, 38
@@ -56,6 +96,7 @@ mov edx, 38 ;12
 call getOffset
 mov dword [esi], 0x069f069e
 
+restart:
 ;print platform
 mov ecx, 4
 mov edx, 0
@@ -84,31 +125,14 @@ for_filas:
 
 salir_for:
 ;printing barrel
-    push 0
-    push 0
-    push 0
-    push 0
-    push 0
-    push 0
-    push 0
-    push 0
-    push ebp
-    mov ebp, esp
-move_barrel:
-    mov dword[ebp+4], 0
-    mov dword[ebp+8], 0
-    mov dword[ebp+12], 0
-    mov dword[ebp+16], 78
-    mov dword[ebp+20], 0
-    mov dword[ebp+24], 15
-    mov dword[ebp+28], 0
-    mov dword[ebp+32], 40
-    mov ecx, 0
-    jmp playing_1
+
+jmp playing_1
+
 
     print_one_barrel:
     ;PRRRRRRRRRRINT FIRST
         ;offset
+        ;#show dword[ebp+4]
         mov edi, dword[ebp+4] ; Row
         mov ebx, edi
         shl edi, 6
@@ -121,8 +145,13 @@ move_barrel:
         mov dword [edi], 0x06ac06ab
         mov dword [edi+160], 0x06ae06ad
 
+        ;ver si perdio..
+        cmp edx, dword[ebp+8]
+        je compare_row
+
     ;PRRRRRRINT SECOND
      ;offset
+        ;#show dword[ebp+12]
         mov edi, dword[ebp+12] ; Row
         mov ebx, edi
         shl edi, 6
@@ -135,7 +164,13 @@ move_barrel:
         mov dword [edi], 0x06ac06ab
         mov dword [edi+160], 0x06ae06ad
 
+        ;ver si perdio..
+        cmp edx, dword[ebp+16]
+        je compare_row
+
         ;PRRRRRRINT THIRDDD
+        ;#show dword[ebp+20]
+        ;#stop
         mov edi, dword[ebp+20] ; Row
         mov ebx, edi
         shl edi, 6
@@ -145,8 +180,11 @@ move_barrel:
         shl edi, 1
         add edi, 0xb800 
 
-        mov dword [edi], 0x06ac06ab
+        mov dword [edi], 0x02ac02ab
         mov dword [edi+160], 0x06ae06ad
+
+        cmp edx, dword[ebp+24]
+        je compare_row
 
         ;PRRRRRRINT FOURRRRTH
         mov edi, dword[ebp+28] ; Row
@@ -161,6 +199,9 @@ move_barrel:
         ;print it
         mov dword [edi], 0x06ac06ab
         mov dword [edi+160], 0x06ae06ad
+
+        cmp edx, dword[ebp+32]
+        je compare_row
         
         ;delay
         mov eax, dword [0xffff0008]
@@ -169,7 +210,19 @@ move_barrel:
             cmp dword [0xffff0008], eax
             jl delay_loop_barrel
 
+        jmp erase
+        compare_row:
+            cmp ecx ,dword[ebp+4]
+            je isLoser
+            cmp ecx ,dword[ebp+12]
+            je isLoser
+            cmp ecx ,dword[ebp+20]
+            je isLoser
+            cmp ecx ,dword[ebp+28]
+            je isLoser
 
+
+        erase: 
         ;ERASE FIRST
         mov edi, dword[ebp+4] ; Row
         mov ebx, edi
@@ -360,7 +413,7 @@ move_barrel:
             jmp return
         set3:
             mov dword[ebp+20], 0
-            mov dword[ebp+24], 15
+            mov dword[ebp+24], 16
         set4:
             mov dword[ebp+28], 0
             mov dword[ebp+32], 40
@@ -451,7 +504,7 @@ playing:
 
 delay:
     mov eax, dword [0xffff0008]
-    add eax, 50
+    add eax, 30
 $delay_loop:
     cmp dword [0xffff0008], eax
     jl $delay_loop
@@ -470,6 +523,7 @@ getOffset:
 
 stop:
     #show al binary
+    add esp, 40
     #stop
 
 stop1:
@@ -485,9 +539,54 @@ print_winner:
     mov dword [0xb800 + ebx], 0x0e490e57;wi
     add ebx, 4
     mov dword [0xb800 + ebx], 0x0e210e4e;n!
-    add esp, 36
+    add esp, 40
     #show ['*'] ascii
     #show eax
+    #stop
+
+;ver si ya no tiene vidas.
+isLoser:
+    #show 1
+    cmp dword[ebp+36], 1
+    je print_loser
+    mov eax, dword[ebp+36]
+    ;borrar corazones
+    cmp eax, 3 ;solo le borro la ultima
+    je three
+    cmp eax, 2; le borro las ultimas dos
+    je two
+    jmp next_isLoser
+    three:
+        mov ecx, 29
+        mov edx, 10
+        call getOffset
+        mov dword [esi], 0x002004b7
+        jmp next_isLoser
+    two: 
+        mov ecx, 29
+        mov edx, 10
+        call getOffset
+        mov dword [esi], 0x00200020
+
+    next_isLoser:
+        dec eax
+        mov dword[ebp+36], eax
+    jmp restart
+
+print_loser:
+    mov ecx, 29
+    mov edx, 8
+    call getOffset
+    mov dword [esi], 0x002070020
+    mov ebx, 410
+    mov dword [0xb800 + ebx], 0x054f0559 ;yo
+    add ebx, 4
+    mov dword [0xb800 + ebx], 0x00200555 ;u_
+    add ebx, 4
+    mov dword [0xb800 + ebx], 0x054f054c;lo
+    add ebx, 4
+    mov dword [0xb800 + ebx], 0x05450553;n!
+    add esp, 40
 
 
 
