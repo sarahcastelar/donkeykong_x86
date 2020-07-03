@@ -96,6 +96,30 @@ mov edx, 38 ;12
 call getOffset
 mov dword [esi], 0x069f069e
 
+
+print_plants:
+    mov ecx, 2
+    mov edx, 24
+    call getOffset
+    mov dword [esi], 0x0aba0ab9
+    mov ecx, 3
+    call getOffset
+    mov dword [esi], 0x0abc0abb
+    mov edx, 26
+     call getOffset
+    mov dword [esi], 0x00200abd
+
+    mov ecx, 2
+    mov edx, 50
+    call getOffset
+    mov dword [esi], 0x0aba0ab9
+    mov ecx, 3
+    call getOffset
+    mov dword [esi], 0x0abc0abb
+    mov edx, 52
+     call getOffset
+    mov dword [esi], 0x00200abd
+
 restart:
 ;print platform
 mov ecx, 4
@@ -124,7 +148,6 @@ for_filas:
             jmp for_columnas
 
 salir_for:
-;printing barrel
 
 jmp playing_1
 
@@ -180,7 +203,7 @@ jmp playing_1
         shl edi, 1
         add edi, 0xb800 
 
-        mov dword [edi], 0x02ac02ab
+        mov dword [edi], 0x06ac06ab
         mov dword [edi+160], 0x06ae06ad
 
         cmp edx, dword[ebp+24]
@@ -205,7 +228,8 @@ jmp playing_1
         
         ;delay
         mov eax, dword [0xffff0008]
-        add eax, 150
+        add eax, 80
+        ;add eax, 150
         delay_loop_barrel:
             cmp dword [0xffff0008], eax
             jl delay_loop_barrel
@@ -420,6 +444,9 @@ jmp playing_1
             
         return:
             ret
+
+print_plant:
+
  
 ;#stop
 ;print mario
@@ -433,7 +460,7 @@ playing_1:
 ;PLAY GAME
 playing:
     call print_one_barrel
-    
+ 
     move_left: 
         mov ah, byte [0xffff0004] ; Keypad
         mov al, ah
@@ -453,6 +480,7 @@ playing:
         call getOffset
         mov dword [esi], 0x09a809a7
         mov dword [esi + 160], 0x099a0999
+        ;call print_one_barrel
         call delay
         jmp move_left
 
@@ -462,7 +490,8 @@ playing:
         and al, 0x2
         test al, al
         jz playing
-        ;call print_one_barrel
+        
+
         cmp ecx, 2
         je print_winner
         cmp edx, 78 
@@ -474,7 +503,16 @@ playing:
         call getOffset
         mov dword [esi], 0x09980997
         mov dword [esi + 160], 0x099a0999
-        call delay
+        ;call delay
+
+        loop_not_right:
+            mov ah, byte [0xffff0004]
+            mov al, ah
+            and al, 0x2
+            test al, al
+        jnz loop_not_right ;si es 0, sigue presionado la right key.
+        call print_one_barrel
+        ;call delay
         jmp move_right
 
 
@@ -492,9 +530,6 @@ playing:
         mov dword [esi + 160], 0x099a0999
         jmp move_left
 
-    next_level_left:
-        ;que empiece fila 17 y algo y columna 2
-
     test_q:
         mov al, ah
         and al, 0x10
@@ -504,7 +539,8 @@ playing:
 
 delay:
     mov eax, dword [0xffff0008]
-    add eax, 30
+    ;add eax, 80
+    add eax, 40
 $delay_loop:
     cmp dword [0xffff0008], eax
     jl $delay_loop
@@ -540,7 +576,7 @@ print_winner:
     add ebx, 4
     mov dword [0xb800 + ebx], 0x0e210e4e;n!
     add esp, 40
-    #show ['*'] ascii
+    ;#show ['*'] ascii
     #show eax
     #stop
 
